@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <unistd.h>
 
 #define ADDRESS_IPV4	AF_INET		/*AF_INET is a macro with value 2 and supports IPv4 addrss family*/
 #define ADDR_IPV6	AF_INET6	/*AF_INET6 is macro for IPv6 address family*/

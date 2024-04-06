@@ -1,24 +1,31 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <unistd.h>
 
-
-#define ADDRESS_IPV4	AF_INET		/*AF_INET is a macro with value 2 and supports IPv4 addrss family*/
-#define ADDR_IPV6	AF_INET6	/*AF_INET6 is macro for IPv6 address family*/
-#define TCP_SOCK	SOCK_STREAM	/*SOCK_STREAM represents TCP*/
-#define UDP_SOCK	SOCK_DGRAM	/*SOCK_DGRAM represents UDP*/
-#define CLIENT_COUNT	(3)		/*Server can wait on Three client*/
-#define REC_PACKET_SIZE	(200)		/*recieved packet size:number of bytes*/
-#define RW_FLAG		(0)		/*some flags required by accept api*/
+#define ADDRESS_IPV4		AF_INET		/*AF_INET is a macro with value 2 and supports IPv4 addrss family*/
+#define ADDR_IPV6		AF_INET6	/*AF_INET6 is macro for IPv6 address family*/
+#define TCP_SOCK		SOCK_STREAM	/*SOCK_STREAM represents TCP*/
+#define UDP_SOCK		SOCK_DGRAM	/*SOCK_DGRAM represents UDP*/
+#define CLIENT_COUNT		(3)		/*Server can wait on Three client*/
+#define REC_PACKET_SIZE		(200)		/*recieved packet size:number of bytes*/
+#define RW_FLAG			(0)		/*some flags required by accept api*/
+#define SERVER_PORT		(12348)
+#define SERVER_IP		"127.0.0.1"
 
 enum {FALSE,TRUE}bool_t;
 enum {ERROR = -1}error_t;
 
+void error(const char *err)
+{
+	printf("%s", err);
+	exit(1);
+}
 int create_socket(void)
 {
 	short hsock = 0;
@@ -29,10 +36,10 @@ int create_socket(void)
 int connect_socket(int hsock)
 {
 	int iRetval = -1;
-	int server_port = 12348;
+	int server_port = SERVER_PORT;
 	struct sockaddr_in remote = {0};
 	remote.sin_family = ADDRESS_IPV4;
-	remote.sin_addr.s_addr = inet_addr("127.0.0.1");
+	remote.sin_addr.s_addr = inet_addr(SERVER_IP);
 	remote.sin_port = htons(server_port);
 
 	iRetval = connect(hsock,(struct sockaddr *)&remote,sizeof(struct sockaddr_in));
@@ -66,31 +73,22 @@ int main()
 	char *trans_msg = "Hello from Khan's client!";
 	hsock = create_socket();
 	if(hsock < 0)
-	{
-		printf("socket creation failed!\n");
-		return ERROR;
-	}
+		error("socket creation failed!\n");
+
 	printf("socket creation succeeded\n");
 	status = connect_socket(hsock);
 	if(status < 0)
-	{
-		printf("connection failed!\n");
-		return ERROR;
-	}
+		error("connection failed!\n");
+	
 	printf("connection succeeded\n");
-
 	status = send_packet(hsock, trans_msg, strlen(trans_msg));
 	if(status < 0)
-	{
-		printf("sending failed!\n");
-		return ERROR;
-	}
+		error("sending failed!\n");
+
 	status = recieve_packet(hsock,rec_msg, sizeof(rec_msg));
 	if(status < 0)
-	{
-		printf("recieve failed!\n");
-		return ERROR;
-	}
+		error("recieve failed!\n");
+
 	printf("%s\n", rec_msg);
 	close(hsock);
 	sleep(10);
