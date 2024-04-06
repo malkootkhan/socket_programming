@@ -42,7 +42,12 @@ int bind_created_socket(int hsock)
 	iRetval = bind(hsock, (struct sockaddr *)&remote, sizeof(remote));
 	return iRetval;	
 }
+void error(const char *err)
+{
+	printf("%s\n", err);
+	exit(1);
 
+}
 int main()
 {
 
@@ -54,17 +59,13 @@ int main()
 
 	socket_desc = create_socket();
 	if(socket_desc < 0)
-	{
-		printf("creating socket failed!\n");
-		return ERROR;
-	}
+		error("creating socket failed!\n");
+
 	printf("Socket creation succeeded\n");
 	status = bind_created_socket(socket_desc);
 	if(status < 0)
-	{
-		printf("binding failed!\n");
-		return ERROR;
-	}
+		error("binding failed!\n");
+
 	printf("binding succeeded\n");
 	listen(socket_desc, CLIENT_COUNT);		/*number of client to be waiting*/
 	/*accept connection*/
@@ -74,21 +75,18 @@ int main()
 		clientLen = sizeof(struct sockaddr_in);
 		sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t *)&clientLen);
 		if(sock < 0)
-		{
-			printf("accept failed!\n");
-			break;
-		}
+			error("accept failed!\n");
 
 		printf("connection accepted!\n");
-		memset(client_message, '\0', sizeof(client_message));
-		memset(message, '\0', sizeof(message));
+		//memset(client_message, '\0', sizeof(client_message));
+		//memset(message, '\0', sizeof(message));
+		bzero(client_message, sizeof(client_message));	/*It is a dedicated function to initialize the memory with 0*/
+		bzero(message, sizeof(message));
 
 		status = recv(sock, client_message, REC_PACKET_SIZE, RW_FLAG);
 		if(status < 0)
-		{
-			printf("packet reception failed!\n");
-			return ERROR;
-		}
+			error("packet reception failed!\n");
+
 		printf("client response: %s\n", client_message);
 
 		if(strcmp(pMessage, client_message) == 0)
@@ -98,10 +96,7 @@ int main()
 
 		status = send(sock,message, strlen(message), RW_FLAG);
 		if(status < 0)
-		{
-			printf("send failed\n");
-			return ERROR;
-		}
+			error("send failed\n");
 		close(sock);
 		sleep(10);
 	}
